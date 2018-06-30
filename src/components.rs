@@ -1,7 +1,5 @@
 use specs::prelude::*;
 
-use plantae;
-
 #[derive(Debug, Default)]
 pub struct Player {}
 
@@ -44,12 +42,11 @@ impl Component for Solid {
 
 #[derive(Debug)]
 pub struct Plantae {
-    pub instance: plantae::PlantaeInstance<plantae::flower::Flower>,
 }
 
 impl Plantae {
-    pub fn new(instance: plantae::PlantaeInstance<plantae::flower::Flower>) -> Self {
-        Plantae { instance }
+    pub fn new() -> Self {
+        Plantae {}
     }
 }
 

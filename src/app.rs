@@ -1,5 +1,6 @@
 use std::path;
 use std::rc::Rc;
+use std::f32;
 
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Color, DrawParam, Point2, Rect, TextCached, TextFragment};
@@ -8,16 +9,13 @@ use ggez::{Context, GameResult};
 use specs::{Dispatcher, DispatcherBuilder};
 
 use assets::Assets;
-use entities;
 use gui::GuiManager;
 use input::{Buttons, ControllerState, InputBinding};
-use plantae::{PlantaeDictionary, PlantaeInstance};
 use resources;
 use screen::Screen;
 use state::Store;
 use systems;
 use tilemap::{SpriteLayer, TileMap};
-use widgets;
 use world::World;
 
 pub struct AppState<'a> {
@@ -25,7 +23,6 @@ pub struct AppState<'a> {
     controller_state: ControllerState,
     gui_manager: GuiManager,
     input_binding: InputBinding,
-    plantae_dictionary: PlantaeDictionary,
     screen: Screen,
     store: Rc<Store>,
     world: World,
@@ -39,14 +36,9 @@ impl<'a> AppState<'a> {
         let mut assets = Assets::new(resource_dir, ctx, &screen)?;
         let input_binding = InputBinding::new();
         let controller_state = ControllerState::new();
-        let plantae_dictionary = PlantaeDictionary::new();
         let mut world = World::new();
-        let mut gui_manager = GuiManager::new();
+        let gui_manager = GuiManager::new();
         let store = Store::new();
-
-        gui_manager
-            .widgets
-            .push(widgets::menu::Menu::new(0.0, 150.0, 50.0, store.clone()));
 
         let bg_tilemap = TileMap::new(
             "/images/cb_temple_b.png",
@@ -76,11 +68,6 @@ impl<'a> AppState<'a> {
         world.specs_world.add_resource(entity_map);
         world.specs_world.add_resource(background_map);
 
-        if let Some(flower_type) = plantae_dictionary.flowers.get(&1) {
-            let instance = PlantaeInstance::new(flower_type.clone());
-            entities::create_flower(&mut world, 3, 3, instance);
-        }
-
         let dispatcher = DispatcherBuilder::new()
             .with(systems::Plantae { ticks: 0 }, "Plantae", &[])
             .build();
@@ -90,7 +77,6 @@ impl<'a> AppState<'a> {
             controller_state,
             gui_manager,
             input_binding,
-            plantae_dictionary,
             screen,
             store,
             world,
@@ -171,6 +157,24 @@ impl<'a> event::EventHandler for AppState<'a> {
         fps_display.queue(
             ctx,
             self.screen.to_screen_coordinates(Point2::new(5.0, 0.0)),
+            None,
+        );
+
+        let logo = TextCached::new(TextFragment {
+            text: format!("infinivy software - 2018"),
+            font_id: Some(self.assets.font.clone().into()),
+            scale: Some(self.assets.default_scale),
+            ..Default::default()
+        })?;
+
+        let position = Point2::new(
+            (self.screen.logical_w as f32 / 2.0) * self.screen.scale_w - (logo.width(ctx) as f32 / 2.0),
+            (self.screen.logical_h as f32 - 25.0) * self.screen.scale_h
+        );
+
+        logo.queue(
+            ctx,
+            position,
             None,
         );
 

@@ -1,5 +1,5 @@
 use ggez::graphics::spritebatch::{SpriteBatch, SpriteIdx};
-use ggez::graphics::{Color, DrawParam, Point2, Rect};
+use ggez::graphics::{Color, DrawParam, Point2, Rect, FilterMode};
 use ggez::Context;
 use warmy;
 use warmy::load::Store;
@@ -62,10 +62,12 @@ pub struct SpriteLayer {
 impl SpriteLayer {
     pub fn new(tilemap: TileMap) -> Self {
         let image = tilemap.image.borrow().0.clone();
+        let mut batch = SpriteBatch::new(image);
+        batch.set_filter(FilterMode::Nearest);
 
         SpriteLayer {
             tilemap,
-            batch: SpriteBatch::new(image),
+            batch,
         }
     }
 

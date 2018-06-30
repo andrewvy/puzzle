@@ -18,8 +18,6 @@ mod components;
 mod entities;
 mod gui;
 mod input;
-mod plantae;
-mod processables;
 mod resources;
 mod screen;
 mod state;
@@ -31,8 +29,8 @@ mod world;
 use app::AppState;
 
 fn main() {
-    let mut context_builder = ContextBuilder::new("settlers_of_lore", "vy")
-        .window_setup(WindowSetup::default().title("Settlers of Lore").allow_highdpi(true).samples(1).expect("Invalid window config"))
+    let mut context_builder = ContextBuilder::new("puzzle", "vy")
+        .window_setup(WindowSetup::default().title("Puzzle").allow_highdpi(true).samples(1).expect("Invalid window config"))
         .window_mode(WindowMode::default().dimensions(1024, 720));
 
     let cargo_path: Option<path::PathBuf> = option_env!("CARGO_MANIFEST_DIR").map(|env_path| {
