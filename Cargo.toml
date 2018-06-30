@@ -1,0 +1,18 @@
+[package]
+name = "settlers_of_lore"
+version = "0.1.0"
+authors = ["vy"]
+
+[dependencies.sdl2]
+version = "0.31.0"
+features = ["bundled"]
+
+[dependencies]
+ggez = "0.4"
+warmy = "0.7.2"
+rand = "0.5.1"
+specs = "0.12"
+
+[profile.dev]
+opt-level = 2
+incremental = true
