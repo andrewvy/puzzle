@@ -32,7 +32,7 @@ impl BackgroundMap {
             for y in 0..128 {
                 let tile = Tile {
                     sprite_layer: 0,
-                    sprite_id: 77,
+                    sprite_id: 1,
                 };
 
                 self.tiles.insert((x, y), tile);

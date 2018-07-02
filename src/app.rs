@@ -41,11 +41,11 @@ impl<'a> AppState<'a> {
         let store = Store::new();
 
         let bg_tilemap = TileMap::new(
-            "/images/cb_temple_b.png",
+            "/images/grass-map.png",
             screen,
             &mut assets.asset_store,
             ctx,
-            8,
+            32,
         );
 
         let entity_tilemap = TileMap::new(
