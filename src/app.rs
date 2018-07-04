@@ -161,7 +161,7 @@ impl<'a> event::EventHandler for AppState<'a> {
         );
 
         let logo = TextCached::new(TextFragment {
-            text: format!("infinivy software - 2018"),
+            text: format!(""),
             font_id: Some(self.assets.font.clone().into()),
             scale: Some(self.assets.default_scale),
             ..Default::default()
