@@ -14,5 +14,6 @@ pub fn create_player(
         .with(Position::new(x, y))
         .with(Movement::new(true))
         .with(Sprite::new(1, 5))
+        .with(Animation::new())
         .build()
 }

@@ -1,7 +1,9 @@
 use std::path;
 use std::rc::Rc;
 use std::f32;
+use std::time::Instant;
 
+use ggez;
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Color, DrawParam, Point2, Rect, TextCached, TextFragment};
 use ggez::timer;
@@ -76,6 +78,7 @@ impl<'a> AppState<'a> {
             .with(systems::Plantae { ticks: 0 }, "plantae", &[])
             .with(systems::PlayerMovement { }, "PlayerMovement", &[])
             .with(systems::ProcessMovement { }, "ProcessMovement", &["PlayerMovement"])
+            .with(systems::ProcessAnimation { }, "ProcessAnimation", &[])
             .build();
 
         Ok(AppState {
@@ -111,6 +114,8 @@ impl<'a> event::EventHandler for AppState<'a> {
         graphics::clear(ctx);
         graphics::set_color(ctx, Color::new(0.0, 0.0, 0.0, 1.0))?;
 
+        let now = Instant::now();
+
         let background_map = self.world
             .specs_world
             .read_resource::<resources::BackgroundMap>();
@@ -121,22 +126,45 @@ impl<'a> event::EventHandler for AppState<'a> {
 
         for ((x, y), tile) in background_map.tiles.iter() {
             if let Some(layer) = self.sprite_layers.get_mut(tile.sprite_layer as usize) {
-                layer.add(tile, *x, *y);
+                layer.add(tile, *x, *y, 0.0, 0.0);
             }
         }
 
         for ((x, y), tile) in entity_map.tiles.iter() {
             if let Some(layer) = self.sprite_layers.get_mut(tile.sprite_layer as usize) {
-                layer.add(tile, *x, *y);
+                layer.add(tile, *x, *y, 0.0, 0.0);
             }
         }
 
         let positions = self.world.specs_world.read_storage::<components::Position>();
         let sprites = self.world.specs_world.read_storage::<components::Sprite>();
+        let animations = self.world.specs_world.read_storage::<components::Animation>();
 
-        for (position, sprite) in (&positions, &sprites).join() {
+        for (position, sprite, animation) in (&positions, &sprites, &animations).join() {
             if let Some(layer) = self.sprite_layers.get_mut(sprite.tile.sprite_layer as usize) {
-                layer.add(&sprite.tile, position.x, position.y);
+                let position_events = animation.animation_queue.iter().filter_map(|e|
+                    match e {
+                        components::AnimationEvent::Position(event) => Some(event),
+                    }
+                );
+
+                let (combined_offset_x, combined_offset_y) = position_events.fold((0.0, 0.0), |(acc_x, acc_y), event|
+                    if now >= event.start && now < event.end {
+                        let (offset_x, offset_y) = event.offset;
+                        let duration_total = event.end - event.start;
+                        let duration_completed = event.end - now;
+                        let percentage_completed = ggez::timer::duration_to_f64(duration_completed) / ggez::timer::duration_to_f64(duration_total);
+
+                        (
+                            acc_x + offset_x as f32 * percentage_completed as f32,
+                            acc_y + offset_y as f32 * percentage_completed as f32
+                        )
+                    } else {
+                        (acc_x, acc_y)
+                    }
+                );
+
+                layer.add(&sprite.tile, position.x, position.y, combined_offset_x, combined_offset_y);
             }
         }
 

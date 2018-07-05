@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::time::Instant;
 
 use specs::prelude::*;
 
@@ -87,6 +88,33 @@ impl Movement {
         }
     }
 }
+
 impl Component for Movement {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct AnimationEventPosition {
+    pub offset: (i32, i32),
+    pub start: Instant,
+    pub end: Instant,
+}
+
+pub enum AnimationEvent {
+    Position(AnimationEventPosition),
+}
+
+pub struct Animation {
+    pub animation_queue: VecDeque<AnimationEvent>,
+}
+
+impl Animation {
+    pub fn new() -> Self {
+        Animation {
+            animation_queue: VecDeque::new(),
+        }
+    }
+}
+
+impl Component for Animation {
     type Storage = VecStorage<Self>;
 }

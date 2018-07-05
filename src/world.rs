@@ -14,6 +14,7 @@ impl World {
         self.specs_world.register::<Solid>();
         self.specs_world.register::<Sprite>();
         self.specs_world.register::<Movement>();
+        self.specs_world.register::<Animation>();
     }
 
     pub fn new() -> Self {

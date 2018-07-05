@@ -71,7 +71,7 @@ impl SpriteLayer {
         }
     }
 
-    pub fn add(&mut self, tile: &Tile, x: i32, y: i32) -> SpriteIdx {
+    pub fn add(&mut self, tile: &Tile, x: i32, y: i32, x_offset: f32, y_offset: f32) -> SpriteIdx {
         let x: usize = x as usize * self.tilemap.sprite_dimensions as usize;
         let y: usize = y as usize * self.tilemap.sprite_dimensions as usize;
 
@@ -87,7 +87,8 @@ impl SpriteLayer {
             ),
             dest: self.tilemap
                 .screen
-                .to_screen_coordinates(Point2::new(x as f32, y as f32)),
+                // @todo(vy): make cleaner
+                .to_screen_coordinates(Point2::new(x as f32 + (x_offset * self.tilemap.sprite_dimensions as f32), y as f32 + (y_offset * self.tilemap.sprite_dimensions as f32))),
             scale: self.tilemap.scale,
             color: Some(Color::new(1.0, 1.0, 1.0, 1.0)),
             ..Default::default()
