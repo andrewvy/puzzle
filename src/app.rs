@@ -6,11 +6,13 @@ use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Color, DrawParam, Point2, Rect, TextCached, TextFragment};
 use ggez::timer;
 use ggez::{Context, GameResult};
-use specs::{Dispatcher, DispatcherBuilder};
+use specs::{Dispatcher, DispatcherBuilder, Join};
 
 use assets::Assets;
+use components;
+use entities;
 use gui::GuiManager;
-use input::{Buttons, ControllerState, InputBinding};
+use input::{ControllerState, InputBinding};
 use resources;
 use screen::Screen;
 use state::Store;
@@ -20,7 +22,6 @@ use world::World;
 
 pub struct AppState<'a> {
     assets: Assets,
-    controller_state: ControllerState,
     gui_manager: GuiManager,
     input_binding: InputBinding,
     screen: Screen,
@@ -49,11 +50,11 @@ impl<'a> AppState<'a> {
         );
 
         let entity_tilemap = TileMap::new(
-            "/images/sapling.png",
+            "/images/grass-map.png",
             screen,
             &mut assets.asset_store,
             ctx,
-            8,
+            32,
         );
 
         let background_layer = SpriteLayer::new(bg_tilemap.clone());
@@ -67,14 +68,18 @@ impl<'a> AppState<'a> {
 
         world.specs_world.add_resource(entity_map);
         world.specs_world.add_resource(background_map);
+        world.specs_world.add_resource(controller_state);
+
+        entities::create_player(&mut world, 3, 3);
 
         let dispatcher = DispatcherBuilder::new()
-            .with(systems::Plantae { ticks: 0 }, "Plantae", &[])
+            .with(systems::Plantae { ticks: 0 }, "plantae", &[])
+            .with(systems::PlayerMovement { }, "PlayerMovement", &[])
+            .with(systems::ProcessMovement { }, "ProcessMovement", &["PlayerMovement"])
             .build();
 
         Ok(AppState {
             assets,
-            controller_state,
             gui_manager,
             input_binding,
             screen,
@@ -91,14 +96,12 @@ impl<'a> event::EventHandler for AppState<'a> {
         const DESIRED_FPS: u32 = 60;
 
         while timer::check_update_time(ctx, DESIRED_FPS) {
-            if self.controller_state.get_button_pressed(Buttons::Action) {
-                let gui_events = self.gui_manager.interact(Buttons::Action);
-
-                println!("{:?}", gui_events);
-            }
-
-            self.controller_state.update();
             self.dispatcher.dispatch(&self.world.specs_world.res);
+
+            {
+                let mut controller_state = self.world.specs_world.write_resource::<ControllerState>();
+                controller_state.update();
+            }
         }
 
         Ok(())
@@ -125,6 +128,15 @@ impl<'a> event::EventHandler for AppState<'a> {
         for ((x, y), tile) in entity_map.tiles.iter() {
             if let Some(layer) = self.sprite_layers.get_mut(tile.sprite_layer as usize) {
                 layer.add(tile, *x, *y);
+            }
+        }
+
+        let positions = self.world.specs_world.read_storage::<components::Position>();
+        let sprites = self.world.specs_world.read_storage::<components::Sprite>();
+
+        for (position, sprite) in (&positions, &sprites).join() {
+            if let Some(layer) = self.sprite_layers.get_mut(sprite.tile.sprite_layer as usize) {
+                layer.add(&sprite.tile, position.x, position.y);
             }
         }
 
@@ -196,13 +208,15 @@ impl<'a> event::EventHandler for AppState<'a> {
         _repeat: bool,
     ) {
         if let Some(button) = self.input_binding.resolve(keycode) {
-            self.controller_state.button_down(button);
+            let mut controller_state = self.world.specs_world.write_resource::<ControllerState>();
+            controller_state.button_down(button);
         }
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         if let Some(button) = self.input_binding.resolve(keycode) {
-            self.controller_state.button_up(button);
+            let mut controller_state = self.world.specs_world.write_resource::<ControllerState>();
+            controller_state.button_up(button);
         }
     }
 }

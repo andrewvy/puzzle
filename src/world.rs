@@ -1,5 +1,4 @@
 use specs;
-use specs::prelude::*;
 
 use components::*;
 
@@ -14,6 +13,7 @@ impl World {
         self.specs_world.register::<Plantae>();
         self.specs_world.register::<Solid>();
         self.specs_world.register::<Sprite>();
+        self.specs_world.register::<Movement>();
     }
 
     pub fn new() -> Self {
@@ -22,9 +22,6 @@ impl World {
         let mut the_world = Self { specs_world: w };
 
         the_world.register_components();
-
-        // Make a test entity.
-        the_world.specs_world.create_entity().build();
 
         the_world
     }

@@ -12,7 +12,7 @@ pub enum Buttons {
 }
 
 #[derive(Debug, Copy, Clone)]
-struct ButtonState {
+pub struct ButtonState {
     pressed: bool,
     pressed_last_frame: bool,
 }
@@ -27,7 +27,7 @@ impl ButtonState {
 }
 
 pub struct ControllerState {
-    buttons: HashMap<Buttons, ButtonState>,
+    pub buttons: HashMap<Buttons, ButtonState>,
 }
 
 impl ControllerState {

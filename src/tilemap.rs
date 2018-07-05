@@ -7,7 +7,7 @@ use warmy::load::Store;
 use assets::Image;
 use screen::Screen;
 
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Debug, Hash, Eq, PartialEq)]
 pub struct Tile {
     pub sprite_layer: i32,
     pub sprite_id: i32,

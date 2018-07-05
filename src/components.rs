@@ -1,4 +1,8 @@
+use std::collections::VecDeque;
+
 use specs::prelude::*;
+
+use tilemap::Tile;
 
 #[derive(Debug, Default)]
 pub struct Player {}
@@ -23,10 +27,19 @@ impl Position {
     }
 }
 
-#[derive(Debug, Default)]
 pub struct Sprite {
-    atlas_id: i32,
-    sprite_id: i32,
+    pub tile: Tile,
+}
+
+impl Sprite {
+    pub fn new(sprite_layer: i32, sprite_id: i32) -> Sprite {
+        Sprite {
+            tile: Tile {
+                sprite_layer,
+                sprite_id,
+            }
+        }
+    }
 }
 
 impl Component for Sprite {
@@ -51,5 +64,29 @@ impl Plantae {
 }
 
 impl Component for Plantae {
+    type Storage = VecStorage<Self>;
+}
+
+pub enum MoveAction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+pub struct Movement {
+    pub player_owned: bool,
+    pub move_queue: VecDeque<MoveAction>,
+}
+
+impl Movement {
+    pub fn new(player_owned: bool) -> Self {
+        Movement {
+            player_owned,
+            move_queue: VecDeque::new(),
+        }
+    }
+}
+impl Component for Movement {
     type Storage = VecStorage<Self>;
 }
