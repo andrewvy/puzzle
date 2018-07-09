@@ -73,7 +73,7 @@ impl<'a> System<'a> for ProcessMovement {
             animation.animation_queue.push_back(AnimationEvent::Position(components::AnimationEventPosition {
                 offset: (position.x - target_x, position.y - target_y),
                 start: Instant::now(),
-                end: Instant::now() + Duration::from_millis(200),
+                end: Instant::now() + Duration::from_millis(100),
             }));
 
             position.x = target_x;
